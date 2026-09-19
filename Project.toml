@@ -1,0 +1,13 @@
+name = "Build"
+uuid = "5da36931-51f3-4d76-a0c5-1b425ddf9f7b"
+authors = ["Build.jl contributors"]
+version = "0.2.0"
+
+[compat]
+julia = "1.10"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
