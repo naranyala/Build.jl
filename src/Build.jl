@@ -320,7 +320,8 @@ end
 
 function _build!(ctx::BuildContext, name::String, visiting::Set{String}, built::Set{String})
     name in built && return
-    name in visiting && throw(ArgumentError("cyclic build dependency involving: $name"))
+    name in visiting && throw(BuildError(name, :dependency,
+        ArgumentError("cyclic build dependency involving: $name")))
     push!(visiting, name)
     t = try
         target(ctx, name)
