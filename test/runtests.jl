@@ -123,13 +123,15 @@ julia_eval(code) = `$(Base.julia_cmd()) --startup-file=no --history-file=no -e $
             @test_throws ProcessFailedException run!(live, julia_eval("exit(3)"))
             @test_throws ProcessFailedException capture!(live, julia_eval("exit(4)"))
             dry = BuildContext(workdir=dir, dry_run=true, verbose=false)
+            add_target!(dry, "dry-output"; recipe=(_, _) -> julia_eval("write(\"dry-output\", \"dry\")"))
+            @test build!(dry, "dry-output") === dry
             @test run!(dry, julia_eval("write(\"dry\", \"dry\")")) === nothing
             @test runall!(dry, julia_eval("write(\"dry-one\", \"dry-one\")"), julia_eval("write(\"dry-two\", \"dry-two\")")) === dry
             @test capture!(dry, julia_eval("print(\"hidden\")")) == ""
             @test start!(dry, julia_eval("write(\"dry-async\", \"dry-async\")")) === nothing
             @test waitall!([nothing]) == [nothing]
             @test runparallel!(dry, julia_eval("write(\"dry-parallel\", \"dry-parallel\")")) === dry
-            @test !ispath(joinpath(dir, "dry")) && !ispath(joinpath(dir, "dry-one"))
+            @test !ispath(joinpath(dir, "dry-output")) && !ispath(joinpath(dir, "dry")) && !ispath(joinpath(dir, "dry-one"))
         end
         mktempdir() do dir
             write(joinpath(dir, "root-file"), "root")

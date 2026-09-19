@@ -47,6 +47,10 @@ add_target!(b, "program"; deps=["main.c"], recipe=(_, _) ->
 build!(BuildContext(workdir=pwd(), dry_run=true), "program")
 ```
 
+Dry runs traverse the same target graph and print the commands that would run,
+but do not require a file target's output to exist afterward. This makes them
+safe for a fresh checkout as well as an already-built tree.
+
 Use `run!(ctx, command(...))` inside a recipe when a command must run between
 other Julia operations. It follows the same working-directory, verbosity, and
 dry-run policy.

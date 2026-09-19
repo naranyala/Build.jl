@@ -33,9 +33,10 @@ end
 
 """A collection of build targets and execution options.
 
-Set `dry_run=true` to print recipes without executing them. Recipes may return
-`Cmd` values (or vectors of them); returned commands are executed by the
-context, so dry runs work consistently.
+Set `dry_run=true` to print returned commands without executing them. Recipes
+still run, so direct Julia filesystem operations must inspect `ctx.dry_run`
+themselves. Recipes may return `Cmd` values (or vectors of them); returned
+commands are executed by the context, so command dry runs work consistently.
 """
 mutable struct BuildContext
     targets::Dict{String,Target}
@@ -343,7 +344,9 @@ function _build!(ctx::BuildContext, name::String, visiting::Set{String}, built::
             error isa BuildError && rethrow()
             throw(BuildError(name, :recipe, error))
         end
-        if !(t.name in ctx.phony || t.virtual) && !_exists(ctx, t.name)
+        # A dry run intentionally performs no writes, so a missing output is
+        # expected. Real builds still enforce the output contract.
+        if !ctx.dry_run && !(t.name in ctx.phony || t.virtual) && !_exists(ctx, t.name)
             throw(BuildError(name, :output,
                              ArgumentError("recipe did not create output '$(t.name)'")))
         end
